@@ -350,7 +350,7 @@ def Q(a,b,ply):
  return best
 def N(d,a,b,ply):
  global ND,ABT,C,E,H,Z,S
- if ply>0 and (H>=100 or PATH.count(Z)>2):return 0
+ if ply>0 and (H>=100 or PATH.count(Z)>1):return 0
  if d<=0:return Q(a,b,ply)
  ND+=1
  if LIM and ND>=LIM:
@@ -380,9 +380,7 @@ def N(d,a,b,ply):
     H=H+1
     S=-S
     Z^=ZS
-    PATH.append(Z)
     sc=-N(d-3,-b,-b+1,ply+1)
-    PATH.pop()
     C,E,H,Z,S=oC,oE,oH,oZ,oS
     if ABT:return 0
     if sc>=b:return sc

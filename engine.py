@@ -335,6 +335,7 @@ def N(d,a,b,ply):
    fl=TTF[slot]
    if fl==1 or fl==2 and s>=b or fl==3 and s<=a:return s
  chk=A(KS[0 if S==1 else 1],-S)
+ if chk:d+=1
  a0=a
  if d>=3 and not chk:
   npc=CNT[8]+CNT[9]+CNT[10]+CNT[11] if S==1 else CNT[4]+CNT[3]+CNT[2]+CNT[1]

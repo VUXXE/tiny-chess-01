@@ -364,10 +364,11 @@ def N(d,a,b,ply):
   quiet=not cap and not pr and not (t==E and (pc==1 or pc==-1))
   if not M(m):continue
   legal+=1
-  if quiet and i>=3 and d>=3 and not chk:
-   sc=-N(d-2,-b,-a,ply+1)
+  if i==0:sc=-N(d-1,-b,-a,ply+1)
+  else:
+   rd=d-2 if quiet and i>=3 and d>=3 and not chk else d-1
+   sc=-N(rd,-a-1,-a,ply+1)
    if sc>a:sc=-N(d-1,-b,-a,ply+1)
-  else:sc=-N(d-1,-b,-a,ply+1)
   W()
   if ABT:return 0
   if sc>best:

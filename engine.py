@@ -347,7 +347,7 @@ def N(d,a,b,ply):
     H=H+1
     S=-S
     Z^=ZS
-    sc=-N(d-3,-b,-b+1,ply+1)
+    sc=-N(d-2,-b,-b+1,ply+1)
     C,E,H,Z,S=oC,oE,oH,oZ,oS
     if ABT:return 0
     if sc>=b:return sc

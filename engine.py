@@ -42,7 +42,7 @@ CNT=[0]*13
 ND=0
 LIM=0
 ABT=False
-TTK,TTD,TTF,TTS,TTM=[[0]*131072 for _ in range(5)]
+TTK,TTD,TTF,TTS,TTM=[[0]*262144 for _ in range(5)]
 KIL=[[0,0] for _ in range(128)]
 HST=[0]*1664
 def F(fen):
@@ -324,7 +324,7 @@ def N(d,a,b,ply):
   ABT=True
   return 0
  if ply>=120:return V()
- slot=Z&131071
+ slot=Z&262143
  ttm=0
  if TTK[slot]==Z:
   ttm=TTM[slot]
@@ -366,7 +366,7 @@ def N(d,a,b,ply):
   legal+=1
   if i==0:sc=-N(d-1,-b,-a,ply+1)
   else:
-   rd=d-2 if quiet and i>=2 and d>=3 and not chk else d-1
+   rd=d-2 if quiet and i>=3 and d>=3 and not chk else d-1
    sc=-N(rd,-a-1,-a,ply+1)
    if sc>a:sc=-N(d-1,-b,-a,ply+1)
   W()
@@ -419,7 +419,7 @@ def R():
   if ABT:break
   sc=N(d,lo-1,lo,0)
   if ABT:break
-  slot=Z&131071
+  slot=Z&262143
   mv=TTM[slot] if TTK[slot]==Z else 0
   if mv in ms:best=mv
   prev=lo

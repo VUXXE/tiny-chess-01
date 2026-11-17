@@ -1,7 +1,7 @@
 import json,os,random,sys,urllib.error,urllib.request
 VAL=[0,100,320,330,500,900,0]
 MATE=100000
-NODES=60000
+NODES=100000
 START="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 KN=[-33,-31,-18,-14,14,18,31,33]
 KI=[-17,-16,-15,-1,1,15,16,17]
@@ -511,5 +511,4 @@ while True:
     if "_http" not in g2:break
    else:g2=P("/resign",{"game":g["game"]})
   g=g2
- print(f"game {g.get('game')}: {g.get('outcome')} by {g.get('reason')}",file=sys.stderr)
-print("done",file=sys.stderr)
+ print(g.get('outcome'),g.get('reason'),file=sys.stderr)

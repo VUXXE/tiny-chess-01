@@ -357,9 +357,9 @@ def N(d,a,b,ply):
   ABT=True
   return 0
  if ply>=120:return V()
- slot=Z&131071
+ slot=(Z^H)&131071
  ttm=0
- if TTK[slot]==Z:
+ if TTK[slot]==Z^H:
   ttm=TTM[slot]
   if TTD[slot]>=d:
    s=TTS[slot]
@@ -415,7 +415,7 @@ def N(d,a,b,ply):
     HST[(pc+6)*128+t]+=d*d
    break
  if not legal:return -MATE+ply if chk else 0
- TTK[slot]=Z
+ TTK[slot]=Z^H
  TTD[slot]=d
  TTM[slot]=bestm
  s2=best
@@ -451,8 +451,8 @@ def R():
   if ABT:break
   sc=N(d,lo-1,lo,0)
   if ABT:break
-  slot=Z&131071
-  mv=TTM[slot] if TTK[slot]==Z else 0
+  slot=(Z^H)&131071
+  mv=TTM[slot] if TTK[slot]==Z^H else 0
   if mv in ms:best=mv
   prev=lo
   if lo>99000:break

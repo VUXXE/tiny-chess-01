@@ -293,7 +293,7 @@ def gen(caps):
             t = pc if pc > 0 else -pc
             if t == 1:
                 to = sq + sd
-                if not to & 0x88 and B[to] == 0 and not caps:
+                if not to & 0x88 and B[to] == 0 and (not caps or sq >> 4 == prr):
                     if sq >> 4 == prr:
                         for p in (5, 4, 3, 2):
                             ms.append(sq | to << 7 | p << 14)
@@ -569,6 +569,8 @@ def negamax(d, a, b, ply):
 def root():
     global ND, ABT, LIM
     ms = legal()
+    if not ms:
+        return 0
     if len(ms) == 1:
         return ms[0]
     ND = 0
@@ -576,7 +578,7 @@ def root():
     best = ms[0]
     prev = 0
     for d in range(1, 65):
-        LIM = 0 if d == 1 else NODES
+        LIM = NODES
         lo = -MATE
         hi = MATE
         g = prev
@@ -624,7 +626,7 @@ def uci(m):
 def parse_uci(u):
     f = (ord(u[1]) - 49) * 16 + ord(u[0]) - 97
     t = (ord(u[3]) - 49) * 16 + ord(u[2]) - 97
-    pr = " nbrq".index(u[4]) if len(u) == 5 else 0
+    pr = "nbrq".index(u[4]) + 2 if len(u) == 5 else 0
     return f | t << 7 | pr << 14
 
 

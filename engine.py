@@ -252,7 +252,7 @@ def L():
    W()
  return o
 def V():
- s=SC+30*((CNT[9]>=2)-(CNT[3]>=2))
+ s=SC+50*((CNT[9]>=2)-(CNT[3]>=2))
  ph=min(320*(CNT[8]+CNT[4])+330*(CNT[9]+CNT[3])+500*(CNT[10]+CNT[2])+900*(CNT[11]+CNT[1]),6400)
  r=KS[0]>>4
  f=KS[0]&7
@@ -347,7 +347,7 @@ def N(d,a,b,ply):
     H=H+1
     S=-S
     Z^=ZS
-    sc=-N(d-2,-b,-b+1,ply+1)
+    sc=-N(d-3,-b,-b+1,ply+1)
     C,E,H,Z,S=oC,oE,oH,oZ,oS
     if ABT:return 0
     if sc>=b:return sc

@@ -1,7 +1,7 @@
 import json,os,random,sys,urllib.error,urllib.request
 VAL=[0,100,320,330,500,900,0]
 MATE=100000
-NODES=140000
+NODES=150000
 START="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 KN=[-33,-31,-18,-14,14,18,31,33]
 KI=[-17,-16,-15,-1,1,15,16,17]

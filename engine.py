@@ -1,8 +1,8 @@
-import json,os,random,sys,urllib.error,urllib.request
+import json,os,random,sys,urllib.error as I,urllib.request as T
 VAL=[0,100,320,330,500,900,0]
 MATE=100000
 NODES=140000
-START="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+START="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0"
 KN=[-33,-31,-18,-14,14,18,31,33]
 KI=[-17,-16,-15,-1,1,15,16,17]
 BD=[-17,-15,15,17]
@@ -42,11 +42,7 @@ CNT=[0]*13
 ND=0
 LIM=0
 ABT=False
-TTK=[0]*131072
-TTD=[0]*131072
-TTF=[0]*131072
-TTS=[0]*131072
-TTM=[0]*131072
+TTK,TTD,TTF,TTS,TTM=[[0]*131072 for _ in range(5)]
 KIL=[[0,0] for _ in range(128)]
 HST=[0]*1664
 def F(fen):
@@ -64,12 +60,9 @@ def F(fen):
   elif ch.isdigit():q+=int(ch)
   else:
    pc="pnbrqk".index(ch.lower())+1
-   if ch.isupper():
-    B[q]=pc
-    if pc==6:KS[0]=q
-   else:
-    B[q]=-pc
-    if pc==6:KS[1]=q
+   sg=1 if ch.isupper() else -1
+   B[q]=pc*sg
+   if pc==6:KS[sg<0]=q
    Z^=ZP[B[q]+6][q]
    CNT[B[q]+6]+=1
    if pc!=6:SC+=PSV[B[q]+6][q]
@@ -78,10 +71,7 @@ def F(fen):
  if S==-1:Z^=ZS
  C=0
  for ch in p[2]:
-  if ch=="K":C|=1
-  elif ch=="Q":C|=2
-  elif ch=="k":C|=4
-  elif ch=="q":C|=8
+  if ch in "KQkq":C|=1<<"KQkq".index(ch)
  Z^=ZC[C]
  if p[3]=="-":E=-1
  else:
@@ -90,12 +80,8 @@ def F(fen):
  H=int(p[4])
  PATH.append(Z)
 def A(sq,by):
- if by==1:
-  for t in (sq-15,sq-17):
-   if not t&136 and B[t]==1:return True
- else:
-  for t in (sq+15,sq+17):
-   if not t&136 and B[t]==-1:return True
+ for t in (sq-15*by,sq-17*by):
+  if not t&136 and B[t]==by:return True
  for d in KN:
   t=sq+d
   if not t&136 and B[t]==2*by:return True
@@ -128,7 +114,7 @@ def M(m):
  cap=B[t]
  cs=t
  sd=16*S
- si=0 if S==1 else 1
+ si=S<0
  if (pc==1 or pc==-1) and t==E and cap==0:
   cs=t-sd
   cap=B[cs]
@@ -152,16 +138,13 @@ def M(m):
  B[f]=0
  if pc==6 or pc==-6:
   KS[si]=t
-  if t-f==2:
-   B[f+1]=B[f+3]
-   B[f+3]=0
-   SC+=PSV[4*S+6][f+1]-PSV[4*S+6][f+3]
-   Z^=ZP[B[f+1]+6][f+3]^ZP[B[f+1]+6][f+1]
-  elif f-t==2:
-   B[f-1]=B[f-4]
-   B[f-4]=0
-   SC+=PSV[4*S+6][f-1]-PSV[4*S+6][f-4]
-   Z^=ZP[B[f-1]+6][f-4]^ZP[B[f-1]+6][f-1]
+  if abs(t-f)==2:
+   a=f+1 if t>f else f-1
+   b=f+3 if t>f else f-4
+   B[a]=B[b]
+   B[b]=0
+   SC+=PSV[4*S+6][a]-PSV[4*S+6][b]
+   Z^=ZP[B[a]+6][b]^ZP[B[a]+6][a]
  nc=C&CK[f]&CK[t]
  if nc!=C:
   Z^=ZC[C]^ZC[nc]
@@ -186,7 +169,7 @@ def W():
  t=m>>7&127
  pr=m>>14&7
  S=-S
- si=0 if S==1 else 1
+ si=S<0
  pc=S if pr else B[t]
  B[f]=pc
  if cs!=t:
@@ -195,12 +178,11 @@ def W():
  else:B[t]=cap
  if pc==6 or pc==-6:
   KS[si]=f
-  if t-f==2:
-   B[f+3]=B[f+1]
-   B[f+1]=0
-  elif f-t==2:
-   B[f-4]=B[f-1]
-   B[f-1]=0
+  if abs(t-f)==2:
+   a=f+1 if t>f else f-1
+   b=f+3 if t>f else f-4
+   B[b]=B[a]
+   B[a]=0
  if pr:
   CNT[pr*S+6]-=1
   CNT[S+6]+=1
@@ -235,21 +217,14 @@ def G(caps):
        for p in (5,4,3,2):ms.append(sq|to<<7|p<<14)
       else:ms.append(sq|to<<7)
      elif to==E and not q:ms.append(sq|to<<7)
-   elif t==2:
-    for d in KN:
+   elif t in (2,6):
+    for d in KN if t==2 else KI:
      to=sq+d
      if to&136:continue
      q=B[to]
      if not q or (q>0)!=(S==1):
       if not caps or q:ms.append(sq|to<<7)
-   elif t==6:
-    for d in KI:
-     to=sq+d
-     if to&136:continue
-     q=B[to]
-     if not q or (q>0)!=(S==1):
-      if not caps or q:ms.append(sq|to<<7)
-    if not caps:
+    if t==6 and not caps:
      if S==1:
       if C&1 and not B[5] and not B[6] and not A(4,-1) and not A(5,-1) and not A(6,-1):ms.append(4|6<<7)
       if C&2 and not B[3] and not B[2] and not B[1] and not A(4,-1) and not A(3,-1) and not A(2,-1):ms.append(4|2<<7)
@@ -277,11 +252,8 @@ def L():
    W()
  return o
 def V():
- s=SC
- if CNT[9]>=2:s+=30
- if CNT[3]>=2:s-=30
- ph=320*(CNT[8]+CNT[4])+330*(CNT[9]+CNT[3])+500*(CNT[10]+CNT[2])+900*(CNT[11]+CNT[1])
- if ph>6400:ph=6400
+ s=SC+30*((CNT[9]>=2)-(CNT[3]>=2))
+ ph=min(320*(CNT[8]+CNT[4])+330*(CNT[9]+CNT[3])+500*(CNT[10]+CNT[2])+900*(CNT[11]+CNT[1]),6400)
  r=KS[0]>>4
  f=KS[0]&7
  i=(7-r)*8+f
@@ -302,10 +274,8 @@ def O(ms,ply,ttm):
   elif pr:s=900000+VAL[pr]
   else:
    cap=B[t]
-   v=0
-   if cap:v=VAL[cap] if cap>0 else VAL[-cap]
-   elif t==E and (pc==1 or pc==-1):v=100
-   if v:s=1000000+10*v-(VAL[pc] if pc>0 else VAL[-pc])
+   v=VAL[abs(cap)] if cap else 100 if t==E and (pc==1 or pc==-1) else 0
+   if v:s=1000000+10*v-VAL[abs(pc)]
    elif m==KIL[ply][0]:s=500000
    elif m==KIL[ply][1]:s=400000
    else:s=HST[(pc+6)*128+t]
@@ -320,14 +290,11 @@ def Q(a,b,ply):
   return 0
  if ply>=120:return V()
  chk=A(KS[0 if S==1 else 1],-S)
+ st=V() if not chk else 0
  if not chk:
-  st=V()
   if st>=b:return st
-  best=st
   if st>a:a=st
- else:
-  best=-MATE
-  st=0
+ best=st if not chk else -MATE
  ms=O(G(not chk),ply,0)
  legal=0
  for m in ms:
@@ -336,7 +303,7 @@ def Q(a,b,ply):
    if not pr:
     t=m>>7&127
     cap=B[t]
-    v=(VAL[cap] if cap>0 else VAL[-cap]) if cap else 100 if t==E else 0
+    v=VAL[abs(cap)] if cap else 100 if t==E else 0
     if v and st+v+200<a:continue
   if not M(m):continue
   legal+=1
@@ -357,9 +324,9 @@ def N(d,a,b,ply):
   ABT=True
   return 0
  if ply>=120:return V()
- slot=(Z^H)&131071
+ slot=Z&131071
  ttm=0
- if TTK[slot]==Z^H:
+ if TTK[slot]==Z:
   ttm=TTM[slot]
   if TTD[slot]>=d:
    s=TTS[slot]
@@ -415,7 +382,7 @@ def N(d,a,b,ply):
     HST[(pc+6)*128+t]+=d*d
    break
  if not legal:return -MATE+ply if chk else 0
- TTK[slot]=Z^H
+ TTK[slot]=Z
  TTD[slot]=d
  TTM[slot]=bestm
  s2=best
@@ -451,8 +418,8 @@ def R():
   if ABT:break
   sc=N(d,lo-1,lo,0)
   if ABT:break
-  slot=(Z^H)&131071
-  mv=TTM[slot] if TTK[slot]==Z^H else 0
+  slot=Z&131071
+  mv=TTM[slot] if TTK[slot]==Z else 0
   if mv in ms:best=mv
   prev=lo
   if lo>99000:break
@@ -476,22 +443,17 @@ def J(fen,gmv):
  ok=True
  for u in gmv:
   want=X(u)
-  found=0
-  for cand in G(False):
-   if cand&127==want&127 and cand>>7&127==want>>7&127 and cand>>14&7==want>>14&7:
-    found=cand
-    break
-  if not found or not M(found):
+  if want not in G(False) or not M(want):
    ok=False
    break
  if not ok or B!=fb:F(fen)
  return R()
 URL=os.environ.get("MAKEFUN_ENV_URL") or sys.exit("MAKEFUN_ENV_URL is not set")
 def P(path,body):
- req=urllib.request.Request(URL+path,data=json.dumps(body).encode(),headers={"content-type":"application/json"})
+ req=T.Request(URL+path,data=json.dumps(body).encode(),headers={"content-type":"application/json"})
  try:
-  with urllib.request.urlopen(req,timeout=9) as r:return json.load(r)
- except urllib.error.HTTPError as e:return {"_http":e.code,"_body":e.read().decode(errors="replace")}
+  with T.urlopen(req,timeout=9) as r:return json.load(r)
+ except I.HTTPError as e:return {"_http":e.code,"_body":e.read().decode(errors="replace")}
  except Exception as e:return {"_http":0,"_body":str(e)}
 while True:
  g=P("/game",{})

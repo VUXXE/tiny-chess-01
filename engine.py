@@ -575,40 +575,27 @@ def root():
         return ms[0]
     ND = 0
     ABT = False
+    LIM = NODES
     best = ms[0]
-    prev = 0
     for d in range(1, 65):
-        LIM = NODES
-        lo = -MATE
-        hi = MATE
-        g = prev
-        sc = negamax(d, g - 1, g, 0)
-        if ABT:
-            break
-        if sc >= g:
-            lo = sc
-        else:
-            hi = sc
-        while lo < hi - 10:
-            g = (lo + hi + 1) // 2
-            sc = negamax(d, g - 1, g, 0)
+        a = -MATE
+        bm = best
+        for i, m in enumerate(order(ms, 0, best)):
+            make(m)
+            if i == 0:
+                sc = -negamax(d - 1, -MATE, MATE, 1)
+            else:
+                sc = -negamax(d - 1, -MATE, -a, 1)
+            unmake()
             if ABT:
                 break
-            if sc >= g:
-                lo = sc
-            else:
-                hi = sc
+            if sc > a:
+                a = sc
+                bm = m
         if ABT:
             break
-        sc = negamax(d, lo - 1, lo, 0)
-        if ABT:
-            break
-        slot = Z & 131071
-        mv = TTM[slot] if TTK[slot] == Z else 0
-        if mv in ms:
-            best = mv
-        prev = lo
-        if lo > 99000:
+        best = bm
+        if a > 99000:
             break
     return best
 

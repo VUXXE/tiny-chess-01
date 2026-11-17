@@ -350,7 +350,7 @@ def Q(a,b,ply):
  return best
 def N(d,a,b,ply):
  global ND,ABT,C,E,H,Z,S
- if ply>0 and (H>=100 or PATH.count(Z)>1):return 0
+ if ply>0 and (H>=100 or PATH.count(Z)>2):return 0
  if d<=0:return Q(a,b,ply)
  ND+=1
  if LIM and ND>=LIM:
